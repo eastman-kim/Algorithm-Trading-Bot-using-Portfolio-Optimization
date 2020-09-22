@@ -61,7 +61,8 @@ class MyWindow(QMainWindow):
         self.text_edit.append("MyKiwoom.py Debugging")
         # MyKiwoom.py debugging 용 update랑 관계 없음
         self.MyKiwoom.price_enumer()
-        print(self.MyKiwoom.temp_price)
+        print(self.MyKiwoom.opw00018_output)
+
         
         pass
 

@@ -1,14 +1,13 @@
-# 앞으로 정할 portfolio 정보
-
 import sys
 import pandas as pd
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from PyQt5.QAxContainer import *
 import time
 
 
-class MyKiwoom(QAxWidget):
+class kiwoom(QAxWidget):
     def __init__(self):
         super().__init__()
         self._create_kiwoom_instance()
@@ -18,14 +17,17 @@ class MyKiwoom(QAxWidget):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
 
     def _set_signal_slots(self):
+        """
+        이벤트 처리 함수
+        """
         self.OnEventConnect.connect(self._event_connect)
         self.OnReceiveTrData.connect(self._receive_tr_data)
         self.OnReceiveChejanData.connect(self._receive_chejan_data)
 
     def comm_connect(self):
-        self.dynamicCall("CommConnect()")            #로그인 윈도우 실행
-        # self.login_event_loop = QEventLoop()
-        # self.login_event_loop.exec_()
+        self.dynamicCall("CommConnect()")
+        self.login_event_loop = QEventLoop()
+        self.login_event_loop.exec_()
 
     def _event_connect(self, err_code):
         if err_code == 0:
@@ -36,7 +38,6 @@ class MyKiwoom(QAxWidget):
 
     def get_code_list_by_market(self, market):
         # 장구분별 종목코드 리스트를 반환
-
         code_list = self.dynamicCall("GetCodeListByMarket(QString)", market)
         code_list = code_list.split(';')
         return code_list[:-1]
@@ -70,8 +71,8 @@ class MyKiwoom(QAxWidget):
         :return: 에러 반환
         """
         self.dynamicCall("CommRqData(QString, QString, int, QString)", rqname, trcode, next, screen_no)
-        # self.tr_event_loop = QEventLoop()
-        # self.tr_event_loop.exec_()
+        self.tr_event_loop = QEventLoop()
+        self.tr_event_loop.exec_()
 
     def _get_comm_data(self, tr_code, record_name, index, item_name):
         """
@@ -146,17 +147,12 @@ class MyKiwoom(QAxWidget):
         print(self.get_chejan_data(901))  # 주문가격
 
     def _receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
-        if next == '2':
-            self.remained_data = True
-        else:
-            self.remained_data = False
+        if next == '2': self.remained_data = True
+        else: self.remained_data = False
 
-        if rqname == "opt10081_req":
-            self._opt10081(rqname, trcode)
-        elif rqname == "opw00001_req":
-            self._opw00001(rqname, trcode)
-        elif rqname == "opw00018_req":
-            self._opw00018(rqname, trcode)
+        if rqname == "opt10081_req": self._opt10081(rqname, trcode)
+        elif rqname == "opw00001_req": self._opw00001(rqname, trcode)
+        elif rqname == "opw00018_req": self._opw00018(rqname, trcode)
 
         try:
             self.tr_event_loop.exit()
@@ -166,29 +162,23 @@ class MyKiwoom(QAxWidget):
     @staticmethod
     def change_format(data):
         strip_data = data.lstrip('-0')
-        if strip_data == '':
-            strip_data = '0'
+        if strip_data == '': strip_data = '0'
 
         format_data = format(int(float(strip_data)), ",")  # 수정 부분
-        if data.startswith('-'):
-            format_data = '-' + format_data
-
+        if data.startswith('-'): format_data = '-' + format_data
         return format_data
 
     @staticmethod
     def change_format2(data):
         strip_data = data.lstrip('-0')
 
-        if strip_data == '':
-            strip_data = '0'
-
-        if strip_data.startswith('.'):
-            strip_data = '0' + strip_data
-
-        if data.startswith('-'):
-            strip_data = '-' + strip_data
-
+        if strip_data == '': strip_data = '0'
+        if strip_data.startswith('.'):  strip_data = '0' + strip_data
+        if data.startswith('-'): strip_data = '-' + strip_data
         return strip_data
+
+    def reset_opw00018_output(self):
+        self.opw00018_output = {'single': [], 'multi': []}
 
     def _opt10081(self, rqname, trcode):
         """
@@ -212,9 +202,9 @@ class MyKiwoom(QAxWidget):
             self.ohlcv['low'].append(int(low))
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
+        return self.ohlcv['close']
 
-    def reset_opw00018_output(self):
-        self.opw00018_output = {'single': [], 'multi': []}
+
 
     def _opw00018(self, rqname, trcode):
         """
@@ -222,6 +212,7 @@ class MyKiwoom(QAxWidget):
         :param rqname: 레코드명
         :param trcode: 거래코드
         :return:
+        최대 20개 종목
         """
         # single data
         total_purchase_price = self._get_comm_data(trcode, rqname, 0, "총매입금액")
@@ -230,36 +221,47 @@ class MyKiwoom(QAxWidget):
         total_earning_rate = self._get_comm_data(trcode,rqname, 0, "총수익률(%)")
         estimated_deposit = self._get_comm_data(trcode,rqname, 0, "추정예탁자산")
 
-        self.opw00018_output['single'].append(MyKiwoom.change_format(total_purchase_price))  # 총매입금액
-        self.opw00018_output['single'].append(MyKiwoom.change_format(total_eval_price))      # 총평가금액
-        self.opw00018_output['single'].append(MyKiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
+        self.opw00018_output['single'].append(kiwoom.change_format(total_purchase_price))  # 총매입금액
+        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_price))      # 총평가금액
+        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
 
-        total_earning_rate = MyKiwoom.change_format(total_earning_rate)   # 총수익률
+        total_earning_rate = kiwoom.change_format(total_earning_rate)   # 총수익률
 
         if self.get_server_gubun():
             total_earning_rate = float(total_earning_rate) / 100   # 모의투자에서는 소숫점 표현으로 변환 필수, 실거래 서버는 소숫점 변환
             total_earning_rate = str(total_earning_rate)           # %로 표현, 문자열로 변환
 
         self.opw00018_output['single'].append(total_earning_rate)
-
-        self.opw00018_output['single'].append(MyKiwoom.change_format(estimated_deposit))
+        self.opw00018_output['single'].append(kiwoom.change_format(estimated_deposit))
 
         # multi data
         rows = self._get_repeat_cnt(trcode, rqname)
         for i in range(rows):
             name = self._get_comm_data(trcode, rqname, i, "종목명")
             quantity = self._get_comm_data(trcode, rqname, i, "보유수량")
-            purchase_price = self._get_comm_data(trcode, rqname, i,  "매입가")
-            current_price = self._get_comm_data(trcode, rqname, i,  "현재가")
-            eval_profit_loss_price = self._get_comm_data(trcode, rqname, i,  "평가손익")
-            earning_rate = self._get_comm_data(trcode, rqname, i,  "수익률(%)")
-
-            quantity = MyKiwoom.change_format(quantity)  # 보유수량
-            purchase_price = MyKiwoom.change_format(purchase_price)  # 매입가
-            current_price = MyKiwoom.change_format(current_price)  # 현재가
-            eval_profit_loss_price = MyKiwoom.change_format(eval_profit_loss_price)  # 평가손익
-            earning_rate = MyKiwoom.change_format2(earning_rate)  # 수익률
-
+            purchase_price = self._get_comm_data(trcode, rqname, i, "매입가")
+            current_price = self._get_comm_data(trcode, rqname, i, "현재가")
+            eval_profit_loss_price = self._get_comm_data(trcode, rqname, i, "평가손익")
+            earning_rate = self._get_comm_data(trcode, rqname, i, "수익률(%)")
+            quantity = kiwoom.change_format(quantity)
+            purchase_price = kiwoom.change_format(purchase_price)
+            current_price = kiwoom.change_format(current_price)
+            eval_profit_loss_price = kiwoom.change_format(eval_profit_loss_price)
+            earning_rate = kiwoom.change_format2(earning_rate)
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    kiwoom = kiwoom()
+    kiwoom.comm_connect()
+
+    account_num = kiwoom.get_login_info("ACCNO")
+    account_num = account_num.split(";")[0]
+    kiwoom.set_input_value("계좌번호",account_num)
+    kiwoom.comm_rq_data("opw00018_req","opt100081",0,"2000")
+    print(kiwoom.opw00018_output['single'])
+    print(kiwoom.opw00018_output['multi'])
+
 
