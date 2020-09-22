@@ -1,7 +1,9 @@
-<img src="res.png" alt="outpt" width="2000"/>
+### <1st Draft> 2020.09 - present
+- 자산 선정          : 섹터 무관 10개 임의 선정
+- 포트폴리오 구성     : 최소분산 포트폴리오
+- 포트폴리오 백테스트 : 리밸런싱 (거래비용 거래수수료만 포함)
 
-1. Scraping stocks price from Naver Finance
-2. Save this dataset to MySQL Server
-3. Load datasets from MySQL Server and create an efficient portfolio using Monte-Carlo Simulation
-4. Run Kiwoom Open API and transact assets in portfolio
-5. Save the result to MySQL and visualize in HTML using AWS
+### <2nd Draft> 2020.10 -
+- 자산 선정          : 섹터별 자산 선정
+- 포트폴리오 구성     : 최소분산 포트폴리오
+- 포트폴리오 백테스트 : 리밸런싱 (거래비용 거래수수료 + Bid-Ask Spread)
