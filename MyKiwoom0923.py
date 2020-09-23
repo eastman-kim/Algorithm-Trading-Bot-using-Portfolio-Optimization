@@ -13,6 +13,10 @@ import pandas as pd
 # 변수들 type이 통일 안됨 00 != "00"
 #  QString int 는 상관 없는 jeneric 임
 
+# 확인 요망
+#  주문 넣고 체결잔고 첫 메시지 안 기다려도 되나?(5초)
+#  매수 매도 모두 "order_req" 로 label 해도 되나?
+
 
 class Kiwoom(QAxWidget):
     def __init__(self):
@@ -72,9 +76,11 @@ class Kiwoom(QAxWidget):
         self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                          [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
         self.chejan_loop = QEventLoop()
+        print("System>>> '{} {}주 {}로 {} 주문중...'".format(
+                list(self.code_dict.keys())[list(self.code_dict.values()).index(code)],
+                quantity, self.order_price_dict[price], self.order_type_dict[int(order_type)]))        
         print("System>>> Order sent and waitting for first call back...")
         self.chejan_loop.exec_()
-
 
 
     # [1계층] 
@@ -202,6 +208,12 @@ class Kiwoom(QAxWidget):
         ret = pd.DataFrame(self.opw00018_output["multi"],
                         columns=["종목명","보유수량","현재가"])
         return ret
+
+    def bid_mrk_order(self, stock_code, quantity):
+        self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, "03", 0, "")
+
+    def ask_mrk_order(self, stock_code, quantity):
+        self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, "03", 0, "")
         
     
     # [3계층 method]
@@ -254,3 +266,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
     print(kiwoom.get_current_info())
+
+    kiwoom.bid_mrk_order(kiwoom.code_list[0],10)
+    print("function working")
