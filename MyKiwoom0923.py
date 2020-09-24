@@ -78,7 +78,7 @@ class Kiwoom(QAxWidget):
         self.chejan_loop = QEventLoop()
         print("System>>> '{} {}주 {}로 {} 주문중...'".format(
                 list(self.code_dict.keys())[list(self.code_dict.values()).index(code)],
-                quantity, self.order_price_dict[price], self.order_type_dict[int(order_type)]))        
+                quantity, self.order_price_dict[hoga], self.order_type_dict[int(order_type)]))        
         print("System>>> Order sent and waitting for first call back...")
         self.chejan_loop.exec_()
 
@@ -168,7 +168,9 @@ class Kiwoom(QAxWidget):
             # 시장가에 매물 없을시 주문체결통보가 여러번 올 수 있음
             # 주문체결통보 한번만 확인하고 다음 주문 넘어가면 됨
             # 잔고통보 가끔 오는데 무시해도 괜찮음
-    def _receive_chejan_data(self, fid):
+
+
+    def _receive_chejan_data(self, gubun, item_cnt, fid_list):
         self.chejan_gubun = int(gubun)
 
         self.msg_cnt[self.chejan_gubun] += 1
@@ -186,6 +188,11 @@ class Kiwoom(QAxWidget):
             print("System>>> New Order made, must wait 5 seconds")
             time.sleep(5)
             self.chejan_loop.exit()
+
+    # _recieve_chejan 안에 fid_list 뽑아 올 수 있음
+        # print("주문번호",self.get_chejan_data(9203))
+    def get_chejan_data(self, fid):
+        ret = self.dynamicCall("GetChejanData(int)", fid)
     
 
     # main에서 쓸(== 0계층) TR이 아닌 method
@@ -210,10 +217,10 @@ class Kiwoom(QAxWidget):
         return ret
 
     def bid_mrk_order(self, stock_code, quantity):
-        self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, "03", 0, "")
+        self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, 0, "03", "")
 
     def ask_mrk_order(self, stock_code, quantity):
-        self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, "03", 0, "")
+        self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, 0, "03", "")
         
     
     # [3계층 method]
