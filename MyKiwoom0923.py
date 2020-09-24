@@ -30,9 +30,9 @@ class Kiwoom(QAxWidget):
                 "06":"최유리지정가", "07":"최우선지정가", "10":"지정가IOC", "13":"시장가IOC", 
                 "16":"최유리IOC", "20":"지정가FOK", "23":"시장가FOK", "26":"최유리FOK",
                  "61":"장전시간외종가", "62":"시간외단일가", "81":"장후시간외종가"}
-        self.code_dict = {"동화약품":"000020","KR모터스":"000040","경방":"000050", "메리츠화재":"000060", 
+        self.code_dict = {"동화약품":"000020","경방":"000050", "메리츠화재":"000060", 
                 "삼양홀딩스":"000070", "하이트진로":"000080","유한양행":"000100","CJ대한통운":"000120","두산":"000150","삼성전자":"005930"}
-        self.code_list = ["000020","000040","000050","000060","000070","000080","000100","000120","000150","005930"]
+        self.code_list = ["000020","000050","000060","000070","000080","000100","000120","000150","005930"]
         self.gubun_dict = {0:"주문체결통보", 1:"잔고통보", 3:"특이신호"}
         self.msg_cnt = [0,0,0]
 
@@ -46,7 +46,7 @@ class Kiwoom(QAxWidget):
 
         self.reset_opw00018_output()
         self.comm_rq_data("opw00018_req", "opw00018", 0, "0101")
-        print(self.opw00018_output["multi"])
+        print(self.get_current_info())
 
 
     def _create_kiwoom_instance(self):
@@ -272,7 +272,15 @@ class Kiwoom(QAxWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
-    print(kiwoom.get_current_info())
 
-    kiwoom.bid_mrk_order(kiwoom.code_list[0],10)
-    print("function working")
+    # # optimal order test
+    order_q_list = 300 - kiwoom.get_current_info().iloc[:,1].apply(int)
+    order_code_list = kiwoom.get_current_info().iloc[:,0].apply(lambda x: kiwoom.code_dict[x])
+
+    # large order는 한시간 걸림
+    # print(order_code_list)
+    # cnt = 0
+    # for o in range(len(order_q_list)):
+    #     kiwoom.bid_mrk_order(order_code_list[o],order_q_list[o])
+    #     print("{}. function working".format(cnt))
+    #     cnt += 1

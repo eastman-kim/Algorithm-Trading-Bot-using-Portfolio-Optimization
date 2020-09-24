@@ -17,3 +17,5 @@ class practice_portfolio:
 
     df_practice = pd.DataFrame([list1, list2],columns=["종목","종목번호","(기존)보유갯수","(기존)주가"])
 
+
+print(300 - practice_portfolio.df_practice.iloc[:3])
