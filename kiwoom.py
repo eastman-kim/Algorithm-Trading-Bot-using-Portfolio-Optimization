@@ -126,6 +126,12 @@ class kiwoom(QAxWidget):
         self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                          [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
 
+    def bid_mrk_order(self, stock_code, quantity):
+        self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, 0, "03", "")
+
+    def ask_mrk_order(self, stock_code, quantity):
+        self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, 0, "03", "")
+
     def get_chejan_data(self, fid):
         """
         체결잔고 데이터 반환
@@ -250,6 +256,11 @@ class kiwoom(QAxWidget):
             earning_rate = kiwoom.change_format2(earning_rate)
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
+
+    def my_first_order(self):
+        """
+        in order to proceed transactions in Kiwoom OpenAPI, we need to buy assets first.
+        """
 
 
 if __name__ == "__main__":

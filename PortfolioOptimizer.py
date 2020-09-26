@@ -1,19 +1,55 @@
-# coding: utf-8
-import pandas as pd
-import numpy as np
+import calendar
+from GetStockPrice import *
 from kiwoom import *
 
-MARKET_KOSPI   = 0
-MARKET_KOSDAQ  = 10
+MARKET_KOSPI = 0
+MARKET_KOSDAQ = 10
 
 
 class PortfolioOptimizer:
-    def __init__(self):
-        self.kiwoom.reset_opw00018_output()
-        account_number = self.kiwoom.get_login_info("ACCNO")
-        self.account_number = account_number.split(';')[0]
+    def __init__(self, items):
+        self.items = items
+        self.code_df = self.get_company_code_df()
+        self.merged_df = self.get_merged_df()
+        self.price_df = self.get_price_df()
+        self.weight_df = self.opt_weight_df(self.merged_df)
+        self.init_buy_list = self.create_buy_list()
 
-    def opt_weight(self, num_sim=10000):
+    def get_company_code_df(self):
+        """
+        Get company codes from KRX(Korea Exchange)
+        """
+        code_df = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13',
+                               header=0)[0]
+        # convert into 6 digits code
+        code_df['종목코드'] = code_df['종목코드'].map('{:06d}'.format)
+        # remove unnecessary columns
+        code_df = code_df[['회사명', '종목코드']]
+        # change Korean to English
+        code_df = code_df.rename(columns={'회사명': 'name', '종목코드': 'code'})
+
+        d = dict()
+        for item in self.items:
+            for i in range(len(code_df)):
+                if code_df.iloc[i][0] == item:
+                    d[code_df.iloc[i][0]] = code_df.iloc[i][1]
+        code_df = pd.DataFrame(d, index=['code']).T
+        print("SUCCESS: get company code")
+        return code_df
+
+    def get_merged_df(self):
+        merged_df = GetStockPrice.get_merged_df(self.items)
+        return merged_df
+
+    def get_price_df(self):
+        price_df = self.merged_df[-1:].T
+        price_df.columns = ['price']
+        price_df = pd.DataFrame(price_df)
+        print("SUCCESS: get today's close price")
+        return price_df
+
+    @staticmethod
+    def opt_weight_df(df, num_sim=10000):
 
         """
     Get optimal weights in the Monte-Carlo approach.
@@ -21,107 +57,115 @@ class PortfolioOptimizer:
     Minimum volatility is priortized to build our portfolio.
     This function returns the optimal weights of the portfolio in a dataframe.
 
-    주의사항
-    1) 자산 10개용. 자산 갯수 변경 시 res_df item_list 수정요함.
 
         """
 
-        self.kiwoom.set_input_value("계좌번호", self.account_number)
-        self.kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
-        df = self.opw00018_output['multi']['close'] # 수정 필요. 현재가로.
-
         num_sim = num_sim
         item_list = df.columns
-        n_items = df.shape[0]
+        n_items = df.shape[1]
         rets = df.pct_change()
         mean_daily_rets = rets.mean()
         cov_matrix = rets.cov()
-        res = np.zeros((3 + n_items,num_sim))  # 3 for returns, std, and sharpe ratio
+        res = np.zeros((3 + n_items, num_sim))  # 3 for returns, std, and sharpe ratio
 
         # get optimal weights in Monte-Carlo approach
         for i in range(num_sim):
             weights = np.random.random(n_items)
-            weights = weights/sum(weights)
+            weights = weights / sum(weights)
 
             # annualized returns and standard deviation
-            prf_rets = np.sum(mean_daily_rets*weights*252)
-            prf_std = np.sqrt(weights.T@(cov_matrix@weights))*np.sqrt(252)
+            prf_rets = np.sum(mean_daily_rets * weights * 252)
+            prf_std = np.sqrt(weights.T @ (cov_matrix @ weights)) * np.sqrt(252)
 
             # returns
             res[0, i] = prf_rets
             # volatility
             res[1, i] = prf_std
             # sharpe ratio(simple ver)
-            res[2, i] = res[0, i]/res[1, i]
+            res[2, i] = res[0, i] / res[1, i]
 
             #
             for j in range(len(weights)):
-                res[j+3, i] = weights[j]
+                res[j + 3, i] = weights[j]
 
-        res_df = pd.DataFrame(res.T, columns=['returns','stdev','sharpe',
-                                              item_list[0], item_list[1], item_list[2],
-                                              item_list[3], item_list[4], item_list[5],
-                                              item_list[6], item_list[7], item_list[8],
-                                              item_list[9]])
+        col_names = []
+        for item in item_list:
+            col_names.append(item)
+        cols = ['returns', 'stdev', 'sharpe'] + col_names
+        res_df = pd.DataFrame(res.T, columns=cols)
 
-        # locate position of portfolio with highest Sharpe Ratio
-        max_sharpe = res_df.iloc[res_df['sharpe'].idxmax()]
         # locate position of portfolio with minimum standard deviation
         min_vol = res_df.iloc[res_df['stdev'].idxmin()]
 
-        self.opt_wgts = pd.DataFrame(min_vol[3:], columns=['opt_wgt'])
-        return 1
+        opt_weights = pd.DataFrame(min_vol[3:])
+        opt_weights.columns = ['opt_wgt']
+        print("SUCCESS: get optimal weights")
+        return opt_weights
+
+    def create_buy_list(self):
+        # concat weights_df, price_df, code_df
+        print("****** Creating my initial buy list ******")
+        code_df = self.code_df
+        price_df = self.price_df
+        weight_df = self.weight_df
+        new_df = pd.concat([code_df, price_df, weight_df], axis=1)
+
+        init_inv = 200000000  # initial investment: 2 billion won
+        new_df['inv amount'] = init_inv * new_df['weights']  # investment amount per asset
+        new_df['quantity'] = round(new_df['inv amount'] / new_df['price'], 0).astype(int)  # quantity round to int
+        print("Successfully created my initial buy list")
+        return new_df
+
+    def initial_order(self):
+        kiwoom.set_input_value("계좌번호", kiwoom.account_number)
+        init_buy_list = self.init_buy_list
+        for i in range(len(init_buy_list)):
+            kiwoom.bid_mrk_order(init_buy_list.iloc[i][1], init_buy_list.iloc[i][5])  # 1 for code, 5 for quantity
 
     def rebalance(self):
-
         """
-            Rebalance the portfolio on the regular basis.
+            Rebalance the portfolio on the regular basis.(on the last day of the current month)
             Currently it proceed when the button is clicked for the debugging purpose.
             This function send buy/sell orders to Kiwoom Open API to proceed corresponding transaction.
-
-            데이터 타입 확인해서 필요시 int, float으로 변경
-            데이터 컬럼: 종목, 종목코드, 보유량, 현재가
         """
-        kiwoom.reset_opw00018_output()
-        kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
-        df = kiwoom.opw00018_output['multi']
+        df = kiwoom.opw00018_output['multi'].set_index('name')
+        opt_df = self.init_buy_list[['code', 'opt_wgt']]
+        df = pd.concat([df, opt_df], axis=1)
 
-        # rebalance at the end of the month
-        # import calender
-        # from datetime import datetime
-        # today = datetime.today()
-        # year, month = today.year, today.month
-        # if today == last_day calender.monthrange(year,month)[1]:
-        #    run below
+        today = datetime.today()
+        year, month = today.year, today.month
+        last_day = calendar.monthrange(year, month)[1]
+        if today == last_day:
+            df['cur_nav'] = df['current_price'] * df['quantity']
+            df['cur_wgt'] = df['cur_nav'] / sum(df['cur_nav'])
 
-        df['cur_nav'] = current_price * quantity
-        df['cur_wgt'] = cur_nav / sum(cur_nav)
-        df = pd.concat([df, self.opt_wgts], axis=1)
-        df['wgt_diff'] = cur_wgt - opt_wgt
-        df['buy sell amount'] = df['wgt_diff'] * sum(cur_nav)
-        df['buy sell shares'] = df['buy sell amount'] / now_price
+            # the difference between current weights and initial optimal weights
+            df['wgt_diff'] = df['cur_wgt'] - df['opt_wgt']
 
-        # transaction cost(commission 0.35%)
-        sell_list = df[(abs(df['buy sell amount']) > df['cur_nav'] * 0.0035) and (df['buy sell shares'] > 0)]
-        buy_list = df[(abs(df['buy sell amount']) > df['cur_nav'] * 0.0035) and (df['buy sell shares'] < 0)]
+            # add column name 'action'
+            df.loc[df['wgt_diff'] >= 0, 'action'] = 'buy'
+            df.loc[df['wgt_diff'] < 0, 'action'] = 'sell'
 
-        return 1
+            # add buy/sell amounts and quantity
+            df['buy/sell amount'] = abs(df['wgt_diff'] * sum(df['cur_nav']))
+            df['buy/sell quantity'] = df['buy/sell amount'] / df['current_price']
 
+            # final decision considering transaction cost(commission 0.35%)
+            df.loc[df['buy/sell amount'] > df['cur_nav']*0.0035, 'decision'] = 'do'
+            df.loc[df['buy/sell amount'] < df['cur_nav']*0.0035, 'decision'] = 'stay'
 
-    def update_buy_list(self, buy_list):
-        f = open("buy_list.txt", "wt")
-        for code in buy_list:
-            f.writelines("매수;", code, ";시장가;10;0;매수전")
-        f.close()
+            # buy and sell list
+            buy_list = df[df['decision'] == 'do']
+            print("There are {} assets needed to be bought".format(len(buy_list)))
+            sell_list = df[df['decision'] == 'stay']
+            print("There are {} assets needed to be sold".format(len(sell_list)))
+            print()
+            # order according to the lists
+            for i in range(len(buy_list)):
+                kiwoom.bid_mrk_order(buy_list.iloc[i]['code 있는 컬럼'], buy_list.iloc[i]['buy/sell quantity 있는 컬럼'])
 
-    def run(self):
-        buy_list = []
-        num = 999 #len(self.kosdaq_codes)
+            for j in range(len(sell_list)):
+                kiwoom.bid_mrk_order(buy_list.iloc[j]['code 있는 컬럼'], buy_list.iloc[j]['buy/sell quantity 있는 컬럼'])
 
-        for i, code in enumerate(self.kosdaq_codes):
-            print(i, '/', num)
-            if self.check_speedy_rising_volume(code):
-                buy_list.append(code)
-
-        self.update_buy_list(buy_list)
-
+        # check if rebalance has succeeded
+        print(kiwoom.opw00018_output['multi'])
