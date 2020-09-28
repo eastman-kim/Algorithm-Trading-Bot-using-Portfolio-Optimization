@@ -13,6 +13,26 @@ class kiwoom(QAxWidget):
         self._create_kiwoom_instance()
         self._set_signal_slots()
 
+        # output["multi"]를 만들어 놓기 위해 진행 되는 선택적 부분
+        self.comm_connect()
+        self.account_number = self.get_login_info("ACCNO")
+        self.account_number = self.account_number.split(";")[0]
+
+        # 조회를 통해 output["multi"] 생성(input 값 뒷부분은 안보내도 괜찮음(비번구분 등))
+        self.set_input_value("계좌번호", self.account_number)
+
+        self.reset_opw00018_output()
+        self.comm_rq_data("opw00018_req", "opw00018", 0, "0101")
+        print(self.get_current_info())
+
+        self.order_type_dict = {1:"신규매수", 2:"신규매도", 3:"매수취소", 4:"매도취소", 5:"매수정정", 6:"매도정정"}
+        self.order_price_dict = {"00":"지정가", "03":"시장가", "05":"조건부지정가",
+                "06":"최유리지정가", "07":"최우선지정가", "10":"지정가IOC", "13":"시장가IOC",
+                "16":"최유리IOC", "20":"지정가FOK", "23":"시장가FOK", "26":"최유리FOK",
+                 "61":"장전시간외종가", "62":"시간외단일가", "81":"장후시간외종가"}
+        self.gubun_dict = {0:"주문체결통보", 1:"잔고통보", 3:"특이신호"}
+        self.msg_cnt = [0,0,0]
+
     def _create_kiwoom_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
 
@@ -27,6 +47,7 @@ class kiwoom(QAxWidget):
     def comm_connect(self):
         self.dynamicCall("CommConnect()")
         self.login_event_loop = QEventLoop()
+        print("****** Logging in ****** ")
         self.login_event_loop.exec_()
 
     def _event_connect(self, err_code):
@@ -123,8 +144,15 @@ class kiwoom(QAxWidget):
         :return: 에러코드
         ex) 시장가 매수 - openApi.SendOrder(“RQ_1”, “0101”, “5015123410”, 1, “000660”, 10, 0, “03”, “”);
         """
+
+    def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no, name):
         self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                          [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
+        self.chejan_loop = QEventLoop()
+        print("System>>> '{} {}주 {}로 {} 주문중...'".format(
+            name, quantity, self.order_price_dict[hoga], self.order_type_dict[int(order_type)]))
+        print("System>>> Order sent and waitting for first call back...")
+        self.chejan_loop.exec_()
 
     def bid_mrk_order(self, stock_code, quantity):
         self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, 0, "03", "")
@@ -146,11 +174,22 @@ class kiwoom(QAxWidget):
         return ret
 
     def _receive_chejan_data(self, gubun, item_cnt, fid_list):
-        print(gubun)
-        print(self.get_chejan_data(9203)) # 주문번호
-        print(self.get_chejan_data(302))  # 종목명
-        print(self.get_chejan_data(900))  # 주문수량
-        print(self.get_chejan_data(901))  # 주문가격
+        self.chejan_gubun = int(gubun)
+        self.msg_cnt[self.chejan_gubun] += 1
+
+        print("System>>> total of {} message about {} received"
+              .format(self.msg_cnt[self.chejan_gubun], self.gubun_dict[self.chejan_gubun]))
+
+        # 첫 주문체결통보에서 event exit
+        # 다른 종목의 추가 체결통보와 겹칠 수 있음으로 예외처리 필요
+        # 모의투자는 종목명이 안뜸으로 sleep 으로 기다려야함
+        # 모든 주문 체결까지 기다리는 알고리즘은 예전 파일에 존재 keep_buying_loop
+
+        if self.chejan_gubun == 0:
+            # 모의투자여서 무작정 기다려야함(모든 거래 다 체결 되는거 기다리는 방법도 있음)
+            print("System>>> New Order made, must wait 5 seconds")
+            time.sleep(5)
+            self.chejan_loop.exit()
 
     def _receive_tr_data(self, screen_no, rqname, trcode, record_name, next, unused1, unused2, unused3, unused4):
         if next == '2': self.remained_data = True
@@ -182,6 +221,14 @@ class kiwoom(QAxWidget):
         if strip_data.startswith('.'):  strip_data = '0' + strip_data
         if data.startswith('-'): strip_data = '-' + strip_data
         return strip_data
+
+    def get_current_info(self):
+        self.set_input_value("계좌번호", self.account_number)
+        self.reset_opw00018_output()
+        self.comm_rq_data("opw00018_req", "opw00018", 0, "0101")
+        ret = pd.DataFrame(self.opw00018_output["multi"], columns=['name', 'quantity', 'purchase_price',
+                                                                   'current_price', 'eval_price', 'earning_rate'])
+        return ret
 
     def reset_opw00018_output(self):
         self.opw00018_output = {'single': [], 'multi': []}
@@ -257,22 +304,11 @@ class kiwoom(QAxWidget):
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
 
-    def my_first_order(self):
-        """
-        in order to proceed transactions in Kiwoom OpenAPI, we need to buy assets first.
-        """
-
-
+"""
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = kiwoom()
     kiwoom.comm_connect()
-
     account_num = kiwoom.get_login_info("ACCNO")
     account_num = account_num.split(";")[0]
-    kiwoom.set_input_value("계좌번호",account_num)
-    kiwoom.comm_rq_data("opw00018_req","opt100081",0,"2000")
-    print(kiwoom.opw00018_output['single'])
-    print(kiwoom.opw00018_output['multi'])
-
-
+"""

@@ -27,11 +27,11 @@ class MyWindow(QMainWindow):
         self.text_edit.setGeometry(10,60,280,80)
         self.text_edit.setEnabled(False) # Read mode only
 
-        btn1 = QPushButton("Weight Opt",self)
+        btn1 = QPushButton("Initial Order with Optimal Weights",self)
         btn1.move(40, 20)
         btn1.clicked.connect(self.btn1_clicked)
 
-        btn2 = QPushButton("Rebalance", self)
+        btn2 = QPushButton("Rebalancing", self)
         btn2.move(160, 20)
         btn1.clicked.connect(self.btn1_clicked)
 
@@ -50,8 +50,6 @@ class MyWindow(QMainWindow):
     def event_connect(self,err_code):
         if err_code == 0: self.text_edit.append("Welcome, I am MonTy.")
         else: self.text_edit.append("로그인 실패")
-
-
 
 
 if __name__ == "__main__":

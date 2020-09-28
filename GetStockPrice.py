@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 import pymysql
 from sqlalchemy import create_engine
 import glob
-#from PortfolioOptimizer import *
 
 
 class GetStockPrice:
@@ -170,8 +169,8 @@ class GetStockPrice:
 
 
 if __name__ == "__main__":
-    item_list = ['SK', '신풍제약'] # 넣을 거 넣어라 여기에다
+    item_list = ['현대자동차', 'NAVER', '대한항공', '포스코', 'SK', 'LG화학', '삼성전자', '셀트리온', 'SK하이닉스', '카카오']
     for item_name in item_list:
         print('Item Name:', item_name)
         MyStock = GetStockPrice(item_name)
-    print(MyStock.get_merged_df(item_list))
+
