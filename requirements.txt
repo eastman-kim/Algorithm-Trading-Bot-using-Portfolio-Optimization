@@ -1,2 +1,0 @@
-Python 3.6.5 32bit
-PyQt5.6

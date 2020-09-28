@@ -1,9 +1,17 @@
-### <1st Draft> 2020.09 - present
-- 자산 선정          : 섹터 무관 10개 임의 선정
-- 포트폴리오 구성     : 최소분산 포트폴리오
-- 포트폴리오 백테스트 : 리밸런싱 (거래비용 거래수수료만 포함)
+## Algorithm Trading Bot using Portfolio Optimization Theories
+- Asset Selection: Random 10 assets (will be updated soon)
+- Portfolio Construction: Minimum Volatility
+- Portfolio Optimization : Rebalancing (now transaction cost only includes only commission, will be updated soon)
 
-### <2nd Draft> 2020.10 -
-- 자산 선정          : 섹터별 자산 선정
-- 포트폴리오 구성     : 최소분산 포트폴리오
-- 포트폴리오 백테스트 : 리밸런싱 (거래비용 거래수수료 + Bid-Ask Spread)
+## How to Use?
+- Choose n number of assets you want and import 1-year price data
+- Calculate optimal weights between assets and build a portfolio considering the minimum volatility
+- Send an initial order to purchase assets using the weights above
+- Rebalance the portfolio weights on the regular basis
+
+## Dev. Environment
+- Anaconda3-4.3.0.1 32bit (Python 3.7, PyQt5.6)
+- Windows 10
+- Other requirements
+      - requests, traceback, BeautifulSoup, datetime,
+      - pymysql, sqlalchemy, glob, time, calendar
