@@ -1,3 +1,5 @@
+![screenshot](optimusPrime.JPG)
+
 ## Algorithm Trading Bot using Portfolio Optimization Theories
 - Asset Selection: Random 10 assets (will be updated soon)
 - Portfolio Construction: Minimum Volatility
