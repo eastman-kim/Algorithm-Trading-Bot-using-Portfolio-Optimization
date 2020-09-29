@@ -1,41 +1,13 @@
 import calendar
-from GetStockPrice import *
-from kiwoom import *
+import numpy as np
+from DataTool import *
 
 
 class PortfolioOptimizer:
-    def __init__(self, items):
-        self.items = items
-        self.code_df = self.get_company_code_df()
-        self.merged_df = self.get_merged_df()
+    def __init__(self):
         self.price_df = self.get_price_df()
         self.weight_df = self.opt_weight_df(self.merged_df)
         self.init_buy_list = self.create_buy_list()
-
-    def get_company_code_df(self):
-        """
-        Get company codes from KRX(Korea Exchange)
-        """
-        print("****** Getting company codes ******")
-        code_df = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13',
-                               header=0)[0]
-        # convert into 6 digits code
-        code_df['종목코드'] = code_df['종목코드'].map('{:06d}'.format)
-        # remove unnecessary columns
-        code_df = code_df[['회사명', '종목코드']]
-        # change Korean to English
-        code_df = code_df.rename(columns={'회사명': 'name', '종목코드': 'code'})
-
-        df = pd.DataFrame()
-        for item in self.items:
-            df = pd.concat([df, code_df.loc[code_df['name'] == item]])
-        code_df = df.set_index('name')
-        print("succeeded")
-        return code_df
-
-    def get_merged_df(self):
-        merged_df = GetStockPrice.get_merged_df(self.items)
-        return merged_df
 
     def get_price_df(self):
         print("****** Getting today's close price ******")
@@ -55,7 +27,7 @@ class PortfolioOptimizer:
 
 
         """
-        np.random.seed(909)
+        # np.random.seed(909)
         print("****** Calculating the optimal weights for the portfolio ******")
         num_sim = num_sim
         item_list = df.columns
@@ -107,7 +79,7 @@ class PortfolioOptimizer:
         weight_df = self.weight_df
         new_df = pd.concat([code_df, price_df, weight_df], axis=1)
 
-        init_inv = 20000000  # initial investment: 2 billion won
+        init_inv = 20000000  # initial investment: 2 illion won
         new_df['inv amount'] = init_inv * new_df['opt_wgt']  # investment amount per asset
         new_df['quantity'] = round(new_df['inv amount'] / new_df['price'], 0).astype(int)  # quantity round to int
         print("succeeded")
@@ -130,8 +102,6 @@ class PortfolioOptimizer:
         df = kiwoom.get_current_info()
         opt_df = self.init_buy_list[['code', 'opt_wgt']]
         df = df.merge(opt_df, on='name')
-        print('rebal merged data')
-        print(df)
 
         today = datetime.today()
         year, month = today.year, today.month
@@ -157,13 +127,13 @@ class PortfolioOptimizer:
             df.loc[df['buy/sell amount'] < df['cur_nav']*0.0035, 'decision'] = 'stay'
 
             # buy and sell list
-            buy_list = df.loc[(df['action'] == 'buy') & (df['decision'] == 'do') & (df['buy/sell quantity'] > 0)]
+            buy_list = df.loc[(df['action'] == 'buy') & (df['decision'] == 'do')]
             buy_list = buy_list[['name', 'code', 'action', 'buy/sell amount', 'buy/sell quantity']]
             print("There are {} assets needed to be bought".format(len(buy_list)))
             for i in range(len(buy_list)):
                 print(i+1, buy_list.iloc[i][0], 'buy', int(buy_list.iloc[i][4]))
 
-            sell_list = df.loc[(df['action'] == 'sell') & (df['decision'] == 'do') & (df['buy/sell quantity'] > 0)]
+            sell_list = df.loc[(df['action'] == 'sell') & (df['decision'] == 'do')]
             sell_list = sell_list[['name', 'code', 'action', 'buy/sell amount', 'buy/sell quantity']]
             print(sell_list)
             print("There are {} assets needed to be sold".format(len(sell_list)))
@@ -185,16 +155,3 @@ class PortfolioOptimizer:
 
             # check if rebalance has succeeded
             print("succeeded")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    kiwoom = kiwoom()
-    kiwoom.comm_connect()
-    account_num = kiwoom.get_login_info("ACCNO")
-    account_num = account_num.split(";")[0]
-    kiwoom.get_current_info()
-    items = ['현대자동차', 'NAVER', '대한항공', '포스코', 'SK', 'LG화학', '삼성전자', '셀트리온', 'SK하이닉스', '카카오']
-    po = PortfolioOptimizer(items)
-    po.send_initial_order()
-    po.rebalance()

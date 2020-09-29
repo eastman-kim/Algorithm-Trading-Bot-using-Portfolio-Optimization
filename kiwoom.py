@@ -1,10 +1,10 @@
-import sys
-import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QAxContainer import *
+from PortfolioOptimizer import *
+import sys
+from PyQt5.QtWidgets import *
 import time
+from sqlalchemy import create_engine
 
 
 class kiwoom(QAxWidget):
@@ -13,25 +13,14 @@ class kiwoom(QAxWidget):
         self._create_kiwoom_instance()
         self._set_signal_slots()
 
-        # output["multi"]를 만들어 놓기 위해 진행 되는 선택적 부분
-        self.comm_connect()
-        self.account_number = self.get_login_info("ACCNO")
-        self.account_number = self.account_number.split(";")[0]
-
-        # 조회를 통해 output["multi"] 생성(input 값 뒷부분은 안보내도 괜찮음(비번구분 등))
-        self.set_input_value("계좌번호", self.account_number)
-
-        self.reset_opw00018_output()
-        self.comm_rq_data("opw00018_req", "opw00018", 0, "0101")
-        print(self.get_current_info())
-
-        self.order_type_dict = {1:"신규매수", 2:"신규매도", 3:"매수취소", 4:"매도취소", 5:"매수정정", 6:"매도정정"}
-        self.order_price_dict = {"00":"지정가", "03":"시장가", "05":"조건부지정가",
-                "06":"최유리지정가", "07":"최우선지정가", "10":"지정가IOC", "13":"시장가IOC",
-                "16":"최유리IOC", "20":"지정가FOK", "23":"시장가FOK", "26":"최유리FOK",
-                 "61":"장전시간외종가", "62":"시간외단일가", "81":"장후시간외종가"}
-        self.gubun_dict = {0:"주문체결통보", 1:"잔고통보", 3:"특이신호"}
-        self.msg_cnt = [0,0,0]
+        self.order_type_dict = {1: "신규매수", 2: "신규매도", 3: "매수취소",
+                                4: "매도취소", 5: "매수정정", 6: "매도정정"}
+        self.order_price_dict = {"00": "지정가", "03": "시장가", "05": "조건부지정가", "06": "최유리지정가",
+                                 "07": "최우선지정가", "10": "지정가IOC", "13": "시장가IOC", "16": "최유리IOC",
+                                 "20": "지정가FOK", "23": "시장가FOK", "26": "최유리FOK", "61": "장전시간외종가",
+                                 "62": "시간외단일가", "81": "장후시간외종가"}
+        self.gubun_dict = {0: "주문체결통보", 1: "잔고통보", 3: "특이신호"}
+        self.msg_cnt = [0, 0, 0]
 
     def _create_kiwoom_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
@@ -95,6 +84,11 @@ class kiwoom(QAxWidget):
         self.tr_event_loop = QEventLoop()
         self.tr_event_loop.exec_()
 
+    def _comm_get_data(self, code, real_type, field_name, index, item_name):
+        ret = self.dynamicCall("CommGetData(QString, QString, QString, int, QString)", code,
+                               real_type, field_name, index, item_name)
+        return ret.strip()
+
     def _get_comm_data(self, tr_code, record_name, index, item_name):
         """
         조회 데이터 반환
@@ -129,22 +123,6 @@ class kiwoom(QAxWidget):
         ret = self.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
         return ret
 
-    def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no):
-        """
-        주식 주문을 서버로 전송
-        :param rqname: 사용자 구분 요청 이름
-        :param screen_no: 화면번호 4자리
-        :param acc_no: 계좌번호 10자리
-        :param order_type: 주문유형 (1.신규매수 2.신규매도 3.매수취소 4.매도취소 5.매수정정 6.매도정정)
-        :param code: 종목코드
-        :param quantity: 주문수량
-        :param price: 주문단가
-        :param hoga: 거래구분
-        :param order_no: 원주문번호
-        :return: 에러코드
-        ex) 시장가 매수 - openApi.SendOrder(“RQ_1”, “0101”, “5015123410”, 1, “000660”, 10, 0, “03”, “”);
-        """
-
     def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no, name):
         self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                          [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
@@ -154,11 +132,13 @@ class kiwoom(QAxWidget):
         print("System>>> Order sent and waitting for first call back...")
         self.chejan_loop.exec_()
 
+    """
     def bid_mrk_order(self, stock_code, quantity):
         self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, 0, "03", "")
 
     def ask_mrk_order(self, stock_code, quantity):
         self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, 0, "03", "")
+    """
 
     def get_chejan_data(self, fid):
         """
@@ -195,9 +175,12 @@ class kiwoom(QAxWidget):
         if next == '2': self.remained_data = True
         else: self.remained_data = False
 
-        if rqname == "opt10081_req": self._opt10081(rqname, trcode)
-        elif rqname == "opw00001_req": self._opw00001(rqname, trcode)
-        elif rqname == "opw00018_req": self._opw00018(rqname, trcode)
+        if rqname == "opt10081_req":
+            self._opt10081(rqname, trcode)
+        elif rqname == "opw00001_req":
+            self._opw00001(rqname, trcode)
+        elif rqname == "opw00018_req":
+            self._opw00018(rqname, trcode)
 
         try:
             self.tr_event_loop.exit()
@@ -230,6 +213,10 @@ class kiwoom(QAxWidget):
                                                                    'current_price', 'eval_price', 'earning_rate'])
         return ret
 
+    def _opw00001(self, rqname, trcode):
+        d2_deposit = self._comm_get_data(trcode, "", rqname, 0, "d+2추정예수금")
+        self.d2_deposit = kiwoom.change_format(d2_deposit)
+
     def reset_opw00018_output(self):
         self.opw00018_output = {'single': [], 'multi': []}
 
@@ -255,9 +242,41 @@ class kiwoom(QAxWidget):
             self.ohlcv['low'].append(int(low))
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
-        return self.ohlcv['close']
 
+    @staticmethod
+    def get_date():
+        """
+        return a date 1-year away from today
+        """
+        start = datetime.strftime(datetime.today() - timedelta(days=365), '%Y-%m-%d')
+        end = datetime.strftime(datetime.today(), '%Y-%m-%d')
+        return start
 
+    def get_opt10081_save_data(self, code, start):
+        print('start get ohlcv')
+        self.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
+        self.kiwoom.set_input_value("종목코드", code)
+        self.kiwoom.set_input_value("기준일자", start)
+        self.kiwoom.set_input_value("수정주가구분", 1)
+        self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        time.sleep(0.2)
+        print(self.ohlcv)
+        print('creating df')
+        return pd.DataFrame(self.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'],
+                          index=self.ohlcv['date'])
+        """
+        print('got data and saving to MySQL')
+        # save to mysql
+        engine = create_engine("mysql+pymysql://root:" + "root" + "@localhost:3306/stock_price?charset=utf8",
+                               encoding='utf-8')
+        conn = engine.connect()
+        df.to_sql(name=('{code}_{today}'.format(code=code,
+                                                today=datetime.strftime(datetime.today(), '%Y%m%d')).lower()),
+                  con=engine, if_exists='replace', index=False)
+        conn.close()
+        print('Successfully Saved in MySQL Server')
+        print()
+        """
 
     def _opw00018(self, rqname, trcode):
         """
@@ -304,11 +323,12 @@ class kiwoom(QAxWidget):
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
 
-"""
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = kiwoom()
     kiwoom.comm_connect()
-    account_num = kiwoom.get_login_info("ACCNO")
-    account_num = account_num.split(";")[0]
-"""
+
+    account_number = kiwoom.get_login_info("ACCNO")
+    account_number = account_number.split(';')[0]
+    kiwoom.set_input_value("계좌번호", account_number)
+    kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
