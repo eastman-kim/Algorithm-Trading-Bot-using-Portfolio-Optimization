@@ -1,4 +1,4 @@
-![screenshot](https://github.com/eastman-kim/Algorithm-Trading-Bot-using-Portfolio-Optimization/tree/joseph/OptimusPrime.jpg?raw=true "Screenshot")
+![screenshot](https://github.com/eastman-kim/Algorithm-Trading-Bot-using-Portfolio-Optimization/tree/joseph/OptimusPrime.png?raw=true "Screenshot")
 
 ## Algorithm Trading Bot using Portfolio Optimization Theories
 - Asset Selection: Random 10 assets (will be updated soon)
