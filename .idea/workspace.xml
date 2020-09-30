@@ -11,48 +11,24 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/OptimusPrime.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="148">
+              <caret line="47" lean-forward="true" selection-start-line="47" selection-end-line="47" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/kiwoom.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="60" column="27" lean-forward="true" selection-start-line="60" selection-start-column="27" selection-end-line="60" selection-end-column="27" />
+            <state relative-caret-position="238">
+              <caret line="304" column="64" lean-forward="true" selection-start-line="304" selection-start-column="64" selection-end-line="304" selection-end-column="64" />
               <folding>
-                <element signature="e#0#10#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MonTy.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="18" column="59" lean-forward="true" selection-start-line="18" selection-start-column="59" selection-end-line="18" selection-end-column="59" />
-              <folding>
-                <element signature="e#0#10#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/PortfolioOptimizer.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="523">
-              <caret line="199" column="18" lean-forward="true" selection-start-line="199" selection-start-column="18" selection-end-line="199" selection-end-column="18" />
-              <folding>
-                <element signature="e#0#15#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/GetStockPrice.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="447">
-              <caret line="174" column="42" lean-forward="true" selection-start-line="174" selection-start-column="42" selection-end-line="174" selection-end-column="42" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#0#26#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -69,36 +45,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>rq</find>
-      <find>comm_rq</find>
-      <find>get_last_page</find>
-      <find>start</find>
-      <find>item_name</find>
-      <find>min</find>
-      <find>min_volatity</find>
-      <find>code</find>
-      <find>self.create_b</find>
-      <find>202009</find>
-      <find>min_vol</find>
+      <find>code_change</find>
+      <find>lineEdit_2</find>
+      <find>lineEdit</find>
+      <find>d2_</find>
+      <find>pushButton</find>
+      <find>opt000</find>
+      <find>opt10081</find>
+      <find>get_</find>
+      <find>ohlcv</find>
+      <find>reset</find>
+      <find>name</find>
+      <find>comm_rq_data</find>
+      <find>_get_comm_data</find>
+      <find>item</find>
       <find>item_list</find>
-      <find>update</find>
-      <find>self.account</find>
-      <find>account_number</find>
-      <find>account</find>
-      <find>com_</find>
-      <find>current</find>
-      <find>weights</find>
-      <find>getstock</find>
-      <find>get_login</find>
-      <find>receive_che</find>
+      <find>self.start</find>
+      <find>PyMon</find>
+      <find>code_df</find>
+      <find>code_list</find>
+      <find>g</find>
+      <find>get_master</find>
+      <find>spin</find>
+      <find>num</find>
       <find>send_order</find>
-      <find>ask</find>
-      <find>send</find>
-      <find>chejan</find>
-      <find>receive</find>
-      <find>chejan_loop</find>
-      <find>opw</find>
-      <find>current_info</find>
+      <find>account</find>
+      <find>order sent</find>
+      <find>log</find>
+      <find>combo</find>
+      <find>spinbox</find>
+      <find>combobox</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -109,40 +85,44 @@
         <option value="$PROJECT_DIR$/real_stock_price_scraper.py" />
         <option value="$PROJECT_DIR$/first_tr.py" />
         <option value="$PROJECT_DIR$/dsdf.py" />
-        <option value="$PROJECT_DIR$/GetStockPrice.py" />
-        <option value="$PROJECT_DIR$/kiwoom.py" />
         <option value="$PROJECT_DIR$/MonTy.py" />
+        <option value="$PROJECT_DIR$/DataTool.py" />
+        <option value="$PROJECT_DIR$/GetStockData.py" />
+        <option value="$PROJECT_DIR$/GetStockPrice.py" />
         <option value="$PROJECT_DIR$/PortfolioOptimizer.py" />
+        <option value="C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI/pytrader.py" />
+        <option value="$PROJECT_DIR$/OptimusPrime.py" />
+        <option value="$PROJECT_DIR$/kiwoom.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="976" />
-    <option name="height" value="1096" />
+    <option name="x" value="-109" />
+    <option name="y" value="296" />
+    <option name="width" value="1936" />
+    <option name="height" value="1066" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="MonsterTrader" type="b2602c69:ProjectViewProjectNode" />
-              <item name="MonsterTrader" type="462c0819:PsiDirectoryNode" />
+              <item name="OptimusPrime v1" type="b2602c69:ProjectViewProjectNode" />
+              <item name="OptimusPrime v1" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="C:/Joseph/GITHUB/Projects/[20FIN]Investment_Portfolio_Optimization_using_Monte-Carlo_Simulation" />
+    <property name="last_opened_file_path" value="C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI/pytrader.py" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -156,8 +136,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.PortfolioOptimizer">
-    <configuration name="GetStockPrice" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.OptimusPrime">
+    <configuration name="DataTool" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MonsterTrader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -169,7 +149,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GetStockPrice.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\josep\Downloads\OptimusPrime v1\GetStockPrice.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -178,7 +158,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="MonT" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="OptimusPrime" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="MonsterTrader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -190,7 +170,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\josep\Downloads\MonsterTrader\MonTy.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/OptimusPrime.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -241,12 +221,34 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="pytrader" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="MonsterTrader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI/pytrader.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.PortfolioOptimizer" />
+        <item itemvalue="Python.OptimusPrime" />
+        <item itemvalue="Python.pytrader" />
         <item itemvalue="Python.kiwoom" />
-        <item itemvalue="Python.GetStockPrice" />
-        <item itemvalue="Python.MonT" />
+        <item itemvalue="Python.PortfolioOptimizer" />
+        <item itemvalue="Python.DataTool" />
       </list>
     </recent_temporary>
   </component>
@@ -267,7 +269,7 @@
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25799572" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1433902" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -278,7 +280,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32917964" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -288,29 +290,47 @@
       <window_info anchor="right" id="R Packages" order="4" />
     </layout>
     <layout-to-restore>
-      <window_info id="Favorites" order="0" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.25" />
-      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="1" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="2" />
-      <window_info anchor="bottom" id="Python Console" order="3" />
-      <window_info anchor="bottom" id="Message" order="4" />
-      <window_info anchor="bottom" id="Find" order="5" />
-      <window_info anchor="bottom" id="Run" order="6" visible="true" weight="0.3290461" />
-      <window_info anchor="bottom" id="Debug" order="7" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="10" />
-      <window_info anchor="right" id="R Graphics" order="0" />
-      <window_info anchor="right" id="R Packages" order="1" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="2" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="3" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="4" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1433902" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3281412" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32917964" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="R Graphics" order="3" />
+      <window_info anchor="right" id="R Packages" order="4" />
     </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/dsdf.py" />
+    <entry file="file://$PROJECT_DIR$/../Alrorithm Trading Bot using Portfolio Optimization/GetStockPrice.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="34" column="28" lean-forward="true" selection-start-line="19" selection-start-column="4" selection-end-line="34" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI/PyMon.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-674">
+          <caret line="3" column="11" lean-forward="true" selection-start-line="3" selection-start-column="11" selection-end-line="3" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Desktop/book-master/ch19/day05/03.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -319,31 +339,65 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dsdf.py" />
-    <entry file="file://$PROJECT_DIR$/GetStockPrice.py">
+    <entry file="file://$USER_HOME$/Desktop/book-master/ch19/day06/pymon.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="174" column="42" lean-forward="true" selection-start-line="174" selection-start-column="42" selection-end-line="174" selection-end-column="42" />
+        <state relative-caret-position="-1292">
+          <caret line="16" column="28" lean-forward="true" selection-start-line="16" selection-start-column="28" selection-end-line="16" selection-end-column="28" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/Desktop/book-master/ch18/day04/pytrader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-760">
+          <caret line="5" column="11" lean-forward="true" selection-start-line="5" selection-start-column="11" selection-end-line="5" selection-end-column="11" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../working/portfolio_optimizer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1757" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/PortfolioOptimizer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="199" column="18" lean-forward="true" selection-start-line="199" selection-start-column="18" selection-end-line="199" selection-end-column="18" />
+        <state relative-caret-position="2005">
+          <caret line="138" selection-start-line="138" selection-end-line="138" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MonTy.py">
+    <entry file="file://$PROJECT_DIR$/GetStockPrice.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="18" column="59" lean-forward="true" selection-start-line="18" selection-start-column="59" selection-end-line="18" selection-end-column="59" />
+        <state relative-caret-position="-807">
+          <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../pytrader-master/pytrader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="143" lean-forward="true" selection-start-line="143" selection-end-line="143" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Joseph/GITHUB/Projects/[19FIN]Algorithm_Trading_Kiwoom_Securities_OpenAPI/pytrader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="475">
+          <caret line="37" column="33" lean-forward="true" selection-start-line="37" selection-start-column="33" selection-end-line="37" selection-end-column="33" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
@@ -352,8 +406,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/kiwoom.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="60" column="27" lean-forward="true" selection-start-line="60" selection-start-column="27" selection-end-line="60" selection-end-column="27" />
+        <state relative-caret-position="238">
+          <caret line="304" column="64" lean-forward="true" selection-start-line="304" selection-start-column="64" selection-end-line="304" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OptimusPrime.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="47" lean-forward="true" selection-start-line="47" selection-end-line="47" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

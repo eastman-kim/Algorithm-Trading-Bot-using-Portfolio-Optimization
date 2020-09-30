@@ -1,9 +1,8 @@
 import sys
-from PyQt5.QtWidgets import *
 from PyQt5 import uic
+from PyQt5 import QtGui
 from kiwoom import *
-from DataTool import *
-
+from PortfolioOptimizer import *
 
 form_class = uic.loadUiType("OptimusPrime.ui")[0]
 
@@ -39,17 +38,20 @@ class MyWindow(QMainWindow, form_class):
         self.downButton.clicked.connect(self.download_data)
         self.optButton.clicked.connect(self.optimize_weights)
         self.sendButton.clicked.connect(self.send_initial_order)
+        self.spinBox.valueChanged.connect(self.asset_num)
+
+        self.comboBox_2.addItems(accounts_list)
 
     def send_order(self):
         order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
         hoga_lookup = {'지정가': "00", '시장가': "03"}
 
-        account = self.comboBox.currentText()
-        order_type = self.comboBox_2.currentText()
-        code = self.codeLineEdit.text()
-        hoga = self.comboBox_3.currentText()
-        num = self.spinBox.value()
-        price = self.spinBox_2.value()
+        account = self.comboBox_2.currentText()
+        order_type = self.comboBox_3.currentText()
+        code = self.codeLineEdit_2.text()
+        hoga = self.comboBox_4.currentText()
+        num = self.spinBox_2.value()
+        price = self.spinBox_3.value()
 
         self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price,
                                hoga_lookup[hoga], "")
@@ -94,10 +96,20 @@ class MyWindow(QMainWindow, form_class):
 
         self.tableWidget_2.resizeRowsToContents()
 
+    # my portfolio
     def code_changed(self):
         code = self.codeLineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.nameLineEdit.setText(name)
+
+    # manual order
+    def code_changed_2(self):
+        code = self.codeLineEdit_2.text()
+        name = self.kiwoom.get_master_code_name(code)
+        self.nameLineEdit_2.setText(name)
+
+    def asset_num(self):
+        self.num = self.spinBox.value()
 
     def reset_bucket(self):
         self.bucket = list()
@@ -111,12 +123,17 @@ class MyWindow(QMainWindow, form_class):
         self.bucket.append([code, name])
 
     def show_bucket(self):
+        item_count = len(self.bucket)
+        print(self.num)
+        if self.num != item_count:
+            QMessageBox.about(self, "Warning!", "Item # is different from the number of assets added to your bucket!")
+            return
+
         account_number = self.kiwoom.get_login_info("ACCNO")
         account_number = account_number.split(';')[0]
         self.kiwoom.set_input_value("계좌번호", account_number)
 
         # Item list
-        item_count = len(self.bucket)
         self.bucketTable.setRowCount(item_count)
 
         for j in range(item_count):
@@ -129,16 +146,28 @@ class MyWindow(QMainWindow, form_class):
         self.bucketTable.resizeRowsToContents()
 
     def download_data(self):
-        print('start downloading')
-        for item_name, item_code in self.bucket:
-            print(item_name, item_code)
-            kiwoom.get_opt10081_save_data(code=item_code, start=kiwoom.get_date())
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.kiwoom.set_input_value("계좌번호", account_number)
+        for code in self.code_list:
+            self.kiwoom.get_ohlcv(code)
+        QMessageBox.about(self, "Notification", "Download Completed")
 
     def optimize_weights(self):
-        self.po = PortfolioOptimizer()
+        self.po = PortfolioOptimizer(self.code_list)
+        QMessageBox.about(self, "Notification", "Calculation Completed")
 
     def send_initial_order(self):
-        self.po.send_initial_order()
+        df = self.po.init_buy_list.reset_index()
+        print("****** Proceeding my initial order ******")
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.kiwoom.set_input_value("계좌번호", account_number)
+        for i in range(len(df)):
+            print("{name}({code}) buy {quantity}".format(name=df.iloc[i][1], code=df.iloc[i][0], quantity=df.iloc[i][5]))
+            self.kiwoom.send_order('order_req', '0101', account_number, 1, df.iloc[i][0], df.iloc[i][5], 0, '03', '')
+        print("succeeded")
+        QMessageBox.about(self, "Notification", "Order Completed")
 
 
 if __name__ == "__main__":

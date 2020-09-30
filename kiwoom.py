@@ -1,10 +1,12 @@
 from PyQt5.QtCore import *
 from PyQt5.QAxContainer import *
-from PortfolioOptimizer import *
+import pandas as pd
 import sys
 from PyQt5.QtWidgets import *
-import time
+from datetime import datetime
+import pymysql
 from sqlalchemy import create_engine
+import time
 
 
 class kiwoom(QAxWidget):
@@ -129,7 +131,7 @@ class kiwoom(QAxWidget):
         self.chejan_loop = QEventLoop()
         print("System>>> '{} {}주 {}로 {} 주문중...'".format(
             name, quantity, self.order_price_dict[hoga], self.order_type_dict[int(order_type)]))
-        print("System>>> Order sent and waitting for first call back...")
+        print("System>>> Order sent and waiting for first call back...")
         self.chejan_loop.exec_()
 
     """
@@ -190,19 +192,23 @@ class kiwoom(QAxWidget):
     @staticmethod
     def change_format(data):
         strip_data = data.lstrip('-0')
-        if strip_data == '': strip_data = '0'
-
+        if strip_data == '':
+            strip_data = '0'
         format_data = format(int(float(strip_data)), ",")  # 수정 부분
-        if data.startswith('-'): format_data = '-' + format_data
+        if data.startswith('-'):
+            format_data = '-' + format_data
         return format_data
 
     @staticmethod
     def change_format2(data):
         strip_data = data.lstrip('-0')
 
-        if strip_data == '': strip_data = '0'
-        if strip_data.startswith('.'):  strip_data = '0' + strip_data
-        if data.startswith('-'): strip_data = '-' + strip_data
+        if strip_data == '':
+            strip_data = '0'
+        if strip_data.startswith('.'):
+            strip_data = '0' + strip_data
+        if data.startswith('-'):
+            strip_data = '-' + strip_data
         return strip_data
 
     def get_current_info(self):
@@ -243,41 +249,6 @@ class kiwoom(QAxWidget):
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
 
-    @staticmethod
-    def get_date():
-        """
-        return a date 1-year away from today
-        """
-        start = datetime.strftime(datetime.today() - timedelta(days=365), '%Y-%m-%d')
-        end = datetime.strftime(datetime.today(), '%Y-%m-%d')
-        return start
-
-    def get_opt10081_save_data(self, code, start):
-        print('start get ohlcv')
-        self.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
-        self.kiwoom.set_input_value("종목코드", code)
-        self.kiwoom.set_input_value("기준일자", start)
-        self.kiwoom.set_input_value("수정주가구분", 1)
-        self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
-        time.sleep(0.2)
-        print(self.ohlcv)
-        print('creating df')
-        return pd.DataFrame(self.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'],
-                          index=self.ohlcv['date'])
-        """
-        print('got data and saving to MySQL')
-        # save to mysql
-        engine = create_engine("mysql+pymysql://root:" + "root" + "@localhost:3306/stock_price?charset=utf8",
-                               encoding='utf-8')
-        conn = engine.connect()
-        df.to_sql(name=('{code}_{today}'.format(code=code,
-                                                today=datetime.strftime(datetime.today(), '%Y%m%d')).lower()),
-                  con=engine, if_exists='replace', index=False)
-        conn.close()
-        print('Successfully Saved in MySQL Server')
-        print()
-        """
-
     def _opw00018(self, rqname, trcode):
         """
         계좌 평가 잔고 내역 요청
@@ -290,8 +261,8 @@ class kiwoom(QAxWidget):
         total_purchase_price = self._get_comm_data(trcode, rqname, 0, "총매입금액")
         total_eval_price = self._get_comm_data(trcode, rqname, 0, "총평가금액")
         total_eval_profit_loss_price = self._get_comm_data(trcode, rqname, 0, "총평가손익금액")
-        total_earning_rate = self._get_comm_data(trcode,rqname, 0, "총수익률(%)")
-        estimated_deposit = self._get_comm_data(trcode,rqname, 0, "추정예탁자산")
+        total_earning_rate = self._get_comm_data(trcode, rqname, 0, "총수익률(%)")
+        estimated_deposit = self._get_comm_data(trcode, rqname, 0, "추정예탁자산")
 
         self.opw00018_output['single'].append(kiwoom.change_format(total_purchase_price))  # 총매입금액
         self.opw00018_output['single'].append(kiwoom.change_format(total_eval_price))      # 총평가금액
@@ -323,12 +294,25 @@ class kiwoom(QAxWidget):
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    kiwoom = kiwoom()
-    kiwoom.comm_connect()
+    def get_ohlcv(self, code):
+        print('****** Getting daily stock price of {}******'.format(code))
+        # get daily stock price
 
-    account_number = kiwoom.get_login_info("ACCNO")
-    account_number = account_number.split(';')[0]
-    kiwoom.set_input_value("계좌번호", account_number)
-    kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        self.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
+        self.set_input_value("종목코드", code)
+        self.set_input_value("기준일자", datetime.strftime(datetime.today(), '%Y%m%d'))
+        self.set_input_value("수정주가구분", 1)
+        self.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        time.sleep(0.2)
+
+        df = pd.DataFrame(self.ohlcv, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+
+        # save to mysql
+        engine = create_engine("mysql+pymysql://root:" + "root" + "@localhost:3306/stock_price?charset=utf8",
+                               encoding='utf-8')
+        conn = engine.connect()
+        df.to_sql(name=('{code}_{today}'.format(code=code, today=datetime.strftime(datetime.today(), '%Y%m%d'))),
+                  con=engine, if_exists='replace', index=False)
+        conn.close()
+        print('Successfully Saved in MySQL Server')
+        #print()
