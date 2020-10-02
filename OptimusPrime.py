@@ -1,8 +1,10 @@
 import sys
 from PyQt5 import uic
 from PyQt5 import QtGui
-from kiwoom import *
+from Kiwoom import *
 from PortfolioOptimizer import *
+from LogDisplay import *
+import qdarkstyle
 
 form_class = uic.loadUiType("OptimusPrime.ui")[0]
 
@@ -17,7 +19,7 @@ class MyWindow(QMainWindow, form_class):
         self.item_list = list()
         self.code_list = list()
 
-        self.kiwoom = kiwoom()
+        self.kiwoom = Kiwoom()
         self.kiwoom.comm_connect()
 
         self.timer2 = QTimer(self)
@@ -29,8 +31,10 @@ class MyWindow(QMainWindow, form_class):
 
         accounts_list = accounts.split(';')[0:accounts_num]
         self.comboBox.addItems(accounts_list)
+        self.comboBox_2.addItems(accounts_list)
 
         self.codeLineEdit.textChanged.connect(self.code_changed)
+        self.codeLineEdit_2.textChanged.connect(self.code_changed_2)
         self.viewButton.clicked.connect(self.check_balance)
         self.resetButton.clicked.connect(self.reset_bucket)
         self.addButton.clicked.connect(self.add_to_bucket)
@@ -40,20 +44,20 @@ class MyWindow(QMainWindow, form_class):
         self.sendButton.clicked.connect(self.send_initial_order)
         self.spinBox.valueChanged.connect(self.asset_num)
 
-        self.comboBox_2.addItems(accounts_list)
+        self.LogDisplay = LogDisplay(self)
 
     def send_order(self):
-        order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
-        hoga_lookup = {'지정가': "00", '시장가': "03"}
+        order_type_lookup = {'Buying': 1, 'Selling': 2, 'Cancel Buying': 3, 'Cancel Selling': 4}
+        hoga_lookup = {'Limit': "00", 'Market': "03"}
 
         account = self.comboBox_2.currentText()
         order_type = self.comboBox_3.currentText()
-        code = self.codeLineEdit_2.text()
+        code2 = self.codeLineEdit_2.text()
         hoga = self.comboBox_4.currentText()
         num = self.spinBox_2.value()
         price = self.spinBox_3.value()
 
-        self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price,
+        self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code2, num, price,
                                hoga_lookup[hoga], "")
 
     def timeout2(self):
@@ -104,8 +108,8 @@ class MyWindow(QMainWindow, form_class):
 
     # manual order
     def code_changed_2(self):
-        code = self.codeLineEdit_2.text()
-        name = self.kiwoom.get_master_code_name(code)
+        code2 = self.codeLineEdit_2.text()
+        name = self.kiwoom.get_master_code_name(code2)
         self.nameLineEdit_2.setText(name)
 
     def asset_num(self):
@@ -169,9 +173,13 @@ class MyWindow(QMainWindow, form_class):
         print("succeeded")
         QMessageBox.about(self, "Notification", "Order Completed")
 
+    def display_log(self):
+        self.LogDisplay()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
     myWindow = MyWindow()
     myWindow.show()
     app.exec_()

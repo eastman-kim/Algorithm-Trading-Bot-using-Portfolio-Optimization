@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import pymysql
-from kiwoom import *
+from Kiwoom import *
+
 
 class PortfolioOptimizer:
     def __init__(self, code_list):

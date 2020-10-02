@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 import time
 
 
-class kiwoom(QAxWidget):
+class Kiwoom(QAxWidget):
     def __init__(self):
         super().__init__()
         self._create_kiwoom_instance()
@@ -221,7 +221,7 @@ class kiwoom(QAxWidget):
 
     def _opw00001(self, rqname, trcode):
         d2_deposit = self._comm_get_data(trcode, "", rqname, 0, "d+2추정예수금")
-        self.d2_deposit = kiwoom.change_format(d2_deposit)
+        self.d2_deposit = Kiwoom.change_format(d2_deposit)
 
     def reset_opw00018_output(self):
         self.opw00018_output = {'single': [], 'multi': []}
@@ -264,18 +264,18 @@ class kiwoom(QAxWidget):
         total_earning_rate = self._get_comm_data(trcode, rqname, 0, "총수익률(%)")
         estimated_deposit = self._get_comm_data(trcode, rqname, 0, "추정예탁자산")
 
-        self.opw00018_output['single'].append(kiwoom.change_format(total_purchase_price))  # 총매입금액
-        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_price))      # 총평가금액
-        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_purchase_price))  # 총매입금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_price))      # 총평가금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
 
-        total_earning_rate = kiwoom.change_format(total_earning_rate)   # 총수익률
+        total_earning_rate = Kiwoom.change_format(total_earning_rate)   # 총수익률
 
         if self.get_server_gubun():
             total_earning_rate = float(total_earning_rate) / 100   # 모의투자에서는 소숫점 표현으로 변환 필수, 실거래 서버는 소숫점 변환
             total_earning_rate = str(total_earning_rate)           # %로 표현, 문자열로 변환
 
         self.opw00018_output['single'].append(total_earning_rate)
-        self.opw00018_output['single'].append(kiwoom.change_format(estimated_deposit))
+        self.opw00018_output['single'].append(Kiwoom.change_format(estimated_deposit))
 
         # multi data
         rows = self._get_repeat_cnt(trcode, rqname)
@@ -286,11 +286,11 @@ class kiwoom(QAxWidget):
             current_price = self._get_comm_data(trcode, rqname, i, "현재가")
             eval_profit_loss_price = self._get_comm_data(trcode, rqname, i, "평가손익")
             earning_rate = self._get_comm_data(trcode, rqname, i, "수익률(%)")
-            quantity = kiwoom.change_format(quantity)
-            purchase_price = kiwoom.change_format(purchase_price)
-            current_price = kiwoom.change_format(current_price)
-            eval_profit_loss_price = kiwoom.change_format(eval_profit_loss_price)
-            earning_rate = kiwoom.change_format2(earning_rate)
+            quantity = Kiwoom.change_format(quantity)
+            purchase_price = Kiwoom.change_format(purchase_price)
+            current_price = Kiwoom.change_format(current_price)
+            eval_profit_loss_price = Kiwoom.change_format(eval_profit_loss_price)
+            earning_rate = Kiwoom.change_format2(earning_rate)
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
 

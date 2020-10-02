@@ -1,4 +1,4 @@
-![screenshot](https://github.com/eastman-kim/Algorithm-Trading-Bot-using-Portfolio-Optimization/blob/joseph/screenshot.jpg)
+![screenshot](https://github.com/eastman-kim/Algorithm-Trading-Bot-using-Portfolio-Optimization/blob/master/img/screenshot.jpg)
 
 ## Algorithm Trading Bot using Portfolio Optimization Theories
 - Asset Selection: Random 10 assets (will be updated soon)
@@ -15,5 +15,4 @@
 - Anaconda3-4.3.0.1 32bit (Python 3.7, PyQt5.6)
 - Windows 10
 - Other requirements
-      - requests, traceback, BeautifulSoup, datetime,
-      - pymysql, sqlalchemy, glob, time, calendar
+      - requests, traceback, BeautifulSoup, datetime, pymysql, sqlalchemy, glob, time, calendar, qdarkstyle
