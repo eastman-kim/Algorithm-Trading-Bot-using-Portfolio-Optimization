@@ -1,13 +1,14 @@
+import sys
 from PyQt5.QtCore import *
 from PyQt5.QAxContainer import *
-from PortfolioOptimizer import *
-import sys
 from PyQt5.QtWidgets import *
-import time
+import pandas as pd
+from datetime import datetime
 from sqlalchemy import create_engine
+import time
 
 
-class kiwoom(QAxWidget):
+class Kiwoom(QAxWidget):
     def __init__(self):
         super().__init__()
         self._create_kiwoom_instance()
@@ -129,16 +130,8 @@ class kiwoom(QAxWidget):
         self.chejan_loop = QEventLoop()
         print("System>>> '{} {}주 {}로 {} 주문중...'".format(
             name, quantity, self.order_price_dict[hoga], self.order_type_dict[int(order_type)]))
-        print("System>>> Order sent and waitting for first call back...")
+        print("System>>> Order sent and waiting for first call back...")
         self.chejan_loop.exec_()
-
-    """
-    def bid_mrk_order(self, stock_code, quantity):
-        self.send_order("order_req", "0101", self.account_number, "1", stock_code, quantity, 0, "03", "")
-
-    def ask_mrk_order(self, stock_code, quantity):
-        self.send_order("order_req", "0101", self.account_number, "2", stock_code, quantity, 0, "03", "")
-    """
 
     def get_chejan_data(self, fid):
         """
@@ -156,7 +149,6 @@ class kiwoom(QAxWidget):
     def _receive_chejan_data(self, gubun, item_cnt, fid_list):
         self.chejan_gubun = int(gubun)
         self.msg_cnt[self.chejan_gubun] += 1
-
         print("System>>> total of {} message about {} received"
               .format(self.msg_cnt[self.chejan_gubun], self.gubun_dict[self.chejan_gubun]))
 
@@ -190,23 +182,29 @@ class kiwoom(QAxWidget):
     @staticmethod
     def change_format(data):
         strip_data = data.lstrip('-0')
-        if strip_data == '': strip_data = '0'
-
+        if strip_data == '':
+            strip_data = '0'
         format_data = format(int(float(strip_data)), ",")  # 수정 부분
-        if data.startswith('-'): format_data = '-' + format_data
+        if data.startswith('-'):
+            format_data = '-' + format_data
         return format_data
 
     @staticmethod
     def change_format2(data):
         strip_data = data.lstrip('-0')
 
-        if strip_data == '': strip_data = '0'
-        if strip_data.startswith('.'):  strip_data = '0' + strip_data
-        if data.startswith('-'): strip_data = '-' + strip_data
+        if strip_data == '':
+            strip_data = '0'
+        if strip_data.startswith('.'):
+            strip_data = '0' + strip_data
+        if data.startswith('-'):
+            strip_data = '-' + strip_data
         return strip_data
 
     def get_current_info(self):
-        self.set_input_value("계좌번호", self.account_number)
+        account_number = self.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.set_input_value("계좌번호", account_number)
         self.reset_opw00018_output()
         self.comm_rq_data("opw00018_req", "opw00018", 0, "0101")
         ret = pd.DataFrame(self.opw00018_output["multi"], columns=['name', 'quantity', 'purchase_price',
@@ -215,7 +213,7 @@ class kiwoom(QAxWidget):
 
     def _opw00001(self, rqname, trcode):
         d2_deposit = self._comm_get_data(trcode, "", rqname, 0, "d+2추정예수금")
-        self.d2_deposit = kiwoom.change_format(d2_deposit)
+        self.d2_deposit = Kiwoom.change_format(d2_deposit)
 
     def reset_opw00018_output(self):
         self.opw00018_output = {'single': [], 'multi': []}
@@ -243,41 +241,6 @@ class kiwoom(QAxWidget):
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
 
-    @staticmethod
-    def get_date():
-        """
-        return a date 1-year away from today
-        """
-        start = datetime.strftime(datetime.today() - timedelta(days=365), '%Y-%m-%d')
-        end = datetime.strftime(datetime.today(), '%Y-%m-%d')
-        return start
-
-    def get_opt10081_save_data(self, code, start):
-        print('start get ohlcv')
-        self.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
-        self.kiwoom.set_input_value("종목코드", code)
-        self.kiwoom.set_input_value("기준일자", start)
-        self.kiwoom.set_input_value("수정주가구분", 1)
-        self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
-        time.sleep(0.2)
-        print(self.ohlcv)
-        print('creating df')
-        return pd.DataFrame(self.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'],
-                          index=self.ohlcv['date'])
-        """
-        print('got data and saving to MySQL')
-        # save to mysql
-        engine = create_engine("mysql+pymysql://root:" + "root" + "@localhost:3306/stock_price?charset=utf8",
-                               encoding='utf-8')
-        conn = engine.connect()
-        df.to_sql(name=('{code}_{today}'.format(code=code,
-                                                today=datetime.strftime(datetime.today(), '%Y%m%d')).lower()),
-                  con=engine, if_exists='replace', index=False)
-        conn.close()
-        print('Successfully Saved in MySQL Server')
-        print()
-        """
-
     def _opw00018(self, rqname, trcode):
         """
         계좌 평가 잔고 내역 요청
@@ -290,21 +253,21 @@ class kiwoom(QAxWidget):
         total_purchase_price = self._get_comm_data(trcode, rqname, 0, "총매입금액")
         total_eval_price = self._get_comm_data(trcode, rqname, 0, "총평가금액")
         total_eval_profit_loss_price = self._get_comm_data(trcode, rqname, 0, "총평가손익금액")
-        total_earning_rate = self._get_comm_data(trcode,rqname, 0, "총수익률(%)")
-        estimated_deposit = self._get_comm_data(trcode,rqname, 0, "추정예탁자산")
+        total_earning_rate = self._get_comm_data(trcode, rqname, 0, "총수익률(%)")
+        estimated_deposit = self._get_comm_data(trcode, rqname, 0, "추정예탁자산")
 
-        self.opw00018_output['single'].append(kiwoom.change_format(total_purchase_price))  # 총매입금액
-        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_price))      # 총평가금액
-        self.opw00018_output['single'].append(kiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_purchase_price))  # 총매입금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_price))      # 총평가금액
+        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_profit_loss_price))  # 총평가손익금액
 
-        total_earning_rate = kiwoom.change_format(total_earning_rate)   # 총수익률
+        total_earning_rate = Kiwoom.change_format(total_earning_rate)   # 총수익률
 
         if self.get_server_gubun():
             total_earning_rate = float(total_earning_rate) / 100   # 모의투자에서는 소숫점 표현으로 변환 필수, 실거래 서버는 소숫점 변환
             total_earning_rate = str(total_earning_rate)           # %로 표현, 문자열로 변환
 
         self.opw00018_output['single'].append(total_earning_rate)
-        self.opw00018_output['single'].append(kiwoom.change_format(estimated_deposit))
+        self.opw00018_output['single'].append(Kiwoom.change_format(estimated_deposit))
 
         # multi data
         rows = self._get_repeat_cnt(trcode, rqname)
@@ -315,20 +278,38 @@ class kiwoom(QAxWidget):
             current_price = self._get_comm_data(trcode, rqname, i, "현재가")
             eval_profit_loss_price = self._get_comm_data(trcode, rqname, i, "평가손익")
             earning_rate = self._get_comm_data(trcode, rqname, i, "수익률(%)")
-            quantity = kiwoom.change_format(quantity)
-            purchase_price = kiwoom.change_format(purchase_price)
-            current_price = kiwoom.change_format(current_price)
-            eval_profit_loss_price = kiwoom.change_format(eval_profit_loss_price)
-            earning_rate = kiwoom.change_format2(earning_rate)
+            quantity = Kiwoom.change_format(quantity)
+            purchase_price = Kiwoom.change_format(purchase_price)
+            current_price = Kiwoom.change_format(current_price)
+            eval_profit_loss_price = Kiwoom.change_format(eval_profit_loss_price)
+            earning_rate = Kiwoom.change_format2(earning_rate)
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    kiwoom = kiwoom()
-    kiwoom.comm_connect()
+    def get_ohlcv(self, code):
+        print('****** Getting daily stock price of {}******'.format(code))
+        # get daily stock price
+        self.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
+        self.set_input_value("종목코드", code)
+        self.set_input_value("기준일자", datetime.strftime(datetime.today(), '%Y%m%d'))
+        self.set_input_value("수정주가구분", 1)
+        self.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        time.sleep(0.2)
 
-    account_number = kiwoom.get_login_info("ACCNO")
-    account_number = account_number.split(';')[0]
-    kiwoom.set_input_value("계좌번호", account_number)
-    kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        df = pd.DataFrame(self.ohlcv, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+
+        # save to mysql
+        engine = create_engine("mysql+pymysql://root:" + "root" + "@localhost:3306/stock_price?charset=utf8",
+                               encoding='utf-8')
+        conn = engine.connect()
+        df.to_sql(name=('{code}_{today}'.format(code=code, today=datetime.strftime(datetime.today(), '%Y%m%d'))),
+                  con=engine, if_exists='replace', index=False)
+        conn.close()
+        print('Successfully Saved in MySQL Server')
+        print()
+
+    def get_all_ohlcv(self):
+        code_list = self.get_code_list_by_market('0')        # KOSPI
+        code_list += self.get_code_list_by_market('10')      # KOSDAQ
+        for code in code_list:
+            self.get_ohlcv(code)

@@ -1,10 +1,8 @@
-import sys
-from PyQt5.QtWidgets import *
 from PyQt5 import uic
-from kiwoom import *
-from DataTool import *
-
-
+from PortfolioOptimizer import *
+import pymysql
+import pandas as pd
+import qdarkstyle
 form_class = uic.loadUiType("OptimusPrime.ui")[0]
 
 
@@ -18,8 +16,10 @@ class MyWindow(QMainWindow, form_class):
         self.item_list = list()
         self.code_list = list()
 
-        self.kiwoom = kiwoom()
+        self.kiwoom = Kiwoom()
         self.kiwoom.comm_connect()
+
+        self.po = PortfolioOptimizer()
 
         self.timer2 = QTimer(self)
         self.timer2.start(1000 * 10)
@@ -27,11 +27,12 @@ class MyWindow(QMainWindow, form_class):
 
         accounts_num = int(self.kiwoom.get_login_info("ACCOUNT_CNT"))
         accounts = self.kiwoom.get_login_info("ACCNO")
-
         accounts_list = accounts.split(';')[0:accounts_num]
         self.comboBox.addItems(accounts_list)
+        self.comboBox_2.addItems(accounts_list)
 
         self.codeLineEdit.textChanged.connect(self.code_changed)
+        self.codeLineEdit_2.textChanged.connect(self.code_changed_2)
         self.viewButton.clicked.connect(self.check_balance)
         self.resetButton.clicked.connect(self.reset_bucket)
         self.addButton.clicked.connect(self.add_to_bucket)
@@ -39,20 +40,26 @@ class MyWindow(QMainWindow, form_class):
         self.downButton.clicked.connect(self.download_data)
         self.optButton.clicked.connect(self.optimize_weights)
         self.sendButton.clicked.connect(self.send_initial_order)
+        self.spinBox.valueChanged.connect(self.asset_num)
+        self.rebalButton.clicked.connect(self.do_rebalance)
+        self.pushButton.clicked.connect(self.send_order)
 
     def send_order(self):
-        order_type_lookup = {'신규매수': 1, '신규매도': 2, '매수취소': 3, '매도취소': 4}
-        hoga_lookup = {'지정가': "00", '시장가': "03"}
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.kiwoom.set_input_value("계좌번호", account_number)
 
-        account = self.comboBox.currentText()
-        order_type = self.comboBox_2.currentText()
-        code = self.codeLineEdit.text()
+        order_type_lookup = {'Buying': 1, 'Selling': 2, 'Cancel Buying': 3, 'Cancel Selling': 4}
+        hoga_lookup = {'Limit Price': "00", 'Market Price': "03"}
+        order_type = self.comboBox_4.currentText()
+        code2 = self.codeLineEdit_2.text()
+        name = self.kiwoom.get_master_code_name(code2)
         hoga = self.comboBox_3.currentText()
-        num = self.spinBox.value()
-        price = self.spinBox_2.value()
-
-        self.kiwoom.send_order("send_order_req", "0101", account, order_type_lookup[order_type], code, num, price,
-                               hoga_lookup[hoga], "")
+        num = self.spinBox_2.value()
+        price = self.spinBox_3.value()
+        print(code2, name)
+        self.kiwoom.send_order("send_order_req", "0101", account_number, order_type_lookup[order_type],
+                               code2, int(num), int(price), hoga_lookup[hoga], "", name)
 
     def timeout2(self):
         if self.checkBox.isChecked():
@@ -94,10 +101,20 @@ class MyWindow(QMainWindow, form_class):
 
         self.tableWidget_2.resizeRowsToContents()
 
+    # my portfolio
     def code_changed(self):
         code = self.codeLineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.nameLineEdit.setText(name)
+
+    # manual order
+    def code_changed_2(self):
+        code2 = self.codeLineEdit_2.text()
+        name = self.kiwoom.get_master_code_name(code2)
+        self.nameLineEdit_2.setText(name)
+
+    def asset_num(self):
+        self.num = self.spinBox.value()
 
     def reset_bucket(self):
         self.bucket = list()
@@ -111,12 +128,16 @@ class MyWindow(QMainWindow, form_class):
         self.bucket.append([code, name])
 
     def show_bucket(self):
+        item_count = len(self.bucket)
+        if self.num != item_count:
+            QMessageBox.about(self, "Warning!", "Item # is different from the number of assets added to your bucket!")
+            return
+
         account_number = self.kiwoom.get_login_info("ACCNO")
         account_number = account_number.split(';')[0]
         self.kiwoom.set_input_value("계좌번호", account_number)
 
         # Item list
-        item_count = len(self.bucket)
         self.bucketTable.setRowCount(item_count)
 
         for j in range(item_count):
@@ -129,20 +150,65 @@ class MyWindow(QMainWindow, form_class):
         self.bucketTable.resizeRowsToContents()
 
     def download_data(self):
-        print('start downloading')
-        for item_name, item_code in self.bucket:
-            print(item_name, item_code)
-            kiwoom.get_opt10081_save_data(code=item_code, start=kiwoom.get_date())
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.kiwoom.set_input_value("계좌번호", account_number)
+        for code in self.code_list:
+            self.kiwoom.get_ohlcv(code)
+        QMessageBox.about(self, "Notification", "Download Completed")
 
     def optimize_weights(self):
-        self.po = PortfolioOptimizer()
+        code_list = self.code_list
+        merged_df = self.po.get_merged_df(code_list)
+        price_df = self.po.get_price_df(code_list, merged_df)
+        name_df = self.po.get_name_df(code_list)
+        weight_df = self.po.opt_weight_df(code_list, merged_df)
+        self.po.create_buy_list(name_df, price_df, weight_df)
+        QMessageBox.about(self, "Notification", "Calculation Completed")
 
     def send_initial_order(self):
-        self.po.send_initial_order()
+        print("****** Proceeding my initial order ******")
+        # mysql server credentials
+        host_name = "localhost"
+        username = "root"
+        password = "root"
+        database_name = "stock_price"
+
+        db = pymysql.connect(
+            host=host_name,  # DATABASE_HOST
+            port=3306,
+            user=username,  # DATABASE_USERNAME
+            passwd=password,  # DATABASE_PASSWORD
+            db=database_name,  # DATABASE_NAME
+            charset='utf8'
+        )
+
+        # default df(first item) for merging all data
+        sql = "SELECT * FROM init_buy_list"
+        df = pd.read_sql(sql, db)
+        df = df.set_index('index')
+        print(df)
+
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+        self.kiwoom.set_input_value("계좌번호", account_number)
+
+        for i in range(len(df)):
+            if int(df.iloc[i][5]) != 0:
+                print("{name}({code}) buy {quantity}".format(name=df.iloc[i][1], code=df.iloc[i][0], quantity=df.iloc[i][5]))
+                self.kiwoom.send_order('order_req', '0101', account_number, 1, df.iloc[i][0], int(df.iloc[i][5]), 0, '03', '', df.iloc[i][1])
+        print("succeeded")
+        QMessageBox.about(self, "Notification", "Order Completed")
+
+    def do_rebalance(self):
+        cur_df = self.kiwoom.get_current_info()
+        self.po.rebalance(cur_df)
+        QMessageBox.about(self, "Notification", "Rebalance Completed")
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
     myWindow = MyWindow()
     myWindow.show()
     app.exec_()
