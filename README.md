@@ -14,5 +14,4 @@
 ## Dev. Environment
 - Anaconda3-4.3.0.1 32bit (Python 3.7, PyQt5.6)
 - Windows 10
-- Other requirements
-      - requests, traceback, BeautifulSoup, datetime, pymysql, sqlalchemy, glob, time, calendar, qdarkstyle
+- requirements.txt
